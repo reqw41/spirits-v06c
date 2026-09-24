@@ -13,7 +13,7 @@ ROM. Исследовательские журналы, стенды сверк�
 
 ```
 disasm/msx/orig/   дизасм оригинала MSX (с комментариями)
-disasm/msx/       канон +0x100
+disasm/msx/        канон +0x100
 disasm/msx/v06/    раскладка Вектора (вход рекомпилятора)
 src/v06/           адаптер экрана, ввода, звука, заставка, читы
 src/i8080/         рекомпилированный код игры + runtime-хелперы
@@ -42,25 +42,22 @@ export ZASM=/path/to/zasm   # или sjasm
 
 ## Сборка
 
-Из корня (блоки `build/v06/*.bin` уже в репозитории):
+Из корня:
 
 ```sh
 sh tools/build_adapter.sh
-# python3 tools/mk_title.py   # опционально (нужен Pillow); planes уже в build/title/
-python3 tools/i8080_dead.py --write
-python3 tools/recompile_i8080.py
+python3 tools/build_v06_rom.py              # эталон Z80 (нужен рекомпилятору)
+python3 tools/recompile_i8080.py            # → src/i8080/game.asm
 python3 tools/build_v06_rom.py  --cpu i8080
-python3 tools/build_port_rom.py --cpu i8080
+python3 tools/build_port_rom.py --cpu i8080 # → build/port/spirits-port-i8080.rom
 ```
 
-Пересобрать блоки игры из дизасма:
+Плоскости заставки уже в `build/title/`. Пересобрать картинку
+(нужен Pillow): `python3 tools/mk_title.py`.
 
-```sh
-python3 tools/verify_v06.py --write
-```
+Пересобрать блоки игры из дизасма: `python3 tools/verify_v06.py --write`.
 
-Без `--cpu` собирается эталон Z80 (для сравнения). Подробности метода —
-[`docs/recompilation.md`](docs/recompilation.md).
+Подробности метода — [`docs/recompilation.md`](docs/recompilation.md).
 
 ## Документация
 
