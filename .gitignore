@@ -1,12 +1,12 @@
 build/adapter/
 build/port/
-build/v06/
 build/i8080/
 build/title/
 build/i18n/
+build/v06/*
+!build/v06/v06-low.bin
+!build/v06/v06-sfx.bin
+!build/v06/v06-plane.bin
 __pycache__/
 *.pyc
 .DS_Store
-# track build/analysis/prof-z80.json (needed for recompile)
-!build/analysis/
-!build/analysis/prof-z80.json

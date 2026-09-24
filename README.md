@@ -13,11 +13,14 @@ ROM. Исследовательские журналы, стенды сверк�
 
 ```
 disasm/msx/orig/   дизасм оригинала MSX (с комментариями)
-disasm/msx/v06/    тот же код в раскладке Вектора (вход рекомпилятора)
+disasm/msx/       канон +0x100
+disasm/msx/v06/    раскладка Вектора (вход рекомпилятора)
 src/v06/           адаптер экрана, ввода, звука, заставка, читы
 src/i8080/         рекомпилированный код игры + runtime-хелперы
-ref/msx/orig/      payload кассеты (для round-trip)
+ref/msx/           payload кассеты
 ref/title/         картинка заставки
+build/v06/         блоки игры (можно пересобрать)
+build/analysis/    профиль горячих IX/IY для рекомпилятора
 tools/             сборка и рекомпиляция
 docs/              геймплей, читы, справка, рекомпиляция
 ```
@@ -38,25 +41,21 @@ export ZASM=/path/to/zasm   # или sjasm
 
 ## Сборка
 
-Из корня:
+Из корня (блоки `build/v06/*.bin` уже в репозитории):
 
 ```sh
-# 1. блоки игры в раскладке Вектора
-python3 tools/verify_v06.py --write
-
-# 2. адаптер ввода/звука
 sh tools/build_adapter.sh
-
-# 3. заставка
 python3 tools/mk_title.py
-
-# 4. Z80 → i8080 (нужен build/analysis/prof-z80.json — уже в репо)
 python3 tools/i8080_dead.py --write
 python3 tools/recompile_i8080.py
-
-# 5. образ адаптера + полный порт
 python3 tools/build_v06_rom.py  --cpu i8080
 python3 tools/build_port_rom.py --cpu i8080
+```
+
+Пересобрать блоки игры из дизасма:
+
+```sh
+python3 tools/verify_v06.py --write
 ```
 
 Без `--cpu` собирается эталон Z80 (для сравнения). Подробности метода —

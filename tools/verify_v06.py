@@ -673,14 +673,18 @@ def check_byte_addr(omem: bytearray, vmem: bytearray) -> int:
 def check_old_green() -> int:
     print("\n=== 5. прежние проверки остались зелёными")
     bad = 0
-    for name in ("verify_disasm.py", "verify_orig.py"):
+    # В этом репозитории — только round-trip канона (+0x100).
+    # verify_orig (кассета / reshift) живёт в полном исследовательском дереве.
+    for name in ("verify_disasm.py",):
         r = subprocess.run([sys.executable, str(ROOT / "tools" / name)],
                            capture_output=True, text=True)
-        last = [x for x in r.stdout.strip().splitlines() if x.strip()][-1]
+        lines = [x for x in r.stdout.strip().splitlines() if x.strip()]
+        last = lines[-1] if lines else "(нет вывода)"
         print(f"  {name}: код {r.returncode} — {last}")
         if r.returncode != 0:
             bad += 1
             fail(f"{name} КРАСНЫЙ")
+    print("  verify_orig.py: пропущен (нет кассеты/reshift в этом репо)")
     return bad
 
 
