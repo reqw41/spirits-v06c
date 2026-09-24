@@ -1,6 +1,6 @@
 # Spirits — порт на Вектор-06Ц
 
-Игра [Spirits](https://www.msx.org/software/games/adventure/spirits)
+Игра [Spirits](https://www.generation-msx.nl/software/topo-soft/spirits/2314)
 (Topo Soft / Erbe, 1987, MSX) на ванильном **Векторе-06Ц** (КР580ВМ80А /
 i8080). Без Z80-переходника.
 
