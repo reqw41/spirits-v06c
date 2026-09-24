@@ -1,12 +1,16 @@
 build/adapter/
 build/port/
 build/i8080/
-build/title/
 build/i18n/
+build/orig/
+build/*.bin
 build/v06/*
 !build/v06/v06-low.bin
 !build/v06/v06-sfx.bin
 !build/v06/v06-plane.bin
+build/title/*
+!build/title/title-planes.bin
+!build/title/title-pal.inc
 __pycache__/
 *.pyc
 .DS_Store

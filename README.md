@@ -18,8 +18,9 @@ disasm/msx/v06/    раскладка Вектора (вход рекомпил�
 src/v06/           адаптер экрана, ввода, звука, заставка, читы
 src/i8080/         рекомпилированный код игры + runtime-хелперы
 ref/msx/           payload кассеты
-ref/title/         картинка заставки
+ref/title/         картинка заставки (исходник для mk_title)
 build/v06/         блоки игры (можно пересобрать)
+build/title/       плоскости заставки
 build/analysis/    профиль горячих IX/IY для рекомпилятора
 tools/             сборка и рекомпиляция
 docs/              геймплей, читы, справка, рекомпиляция
@@ -45,7 +46,7 @@ export ZASM=/path/to/zasm   # или sjasm
 
 ```sh
 sh tools/build_adapter.sh
-python3 tools/mk_title.py
+# python3 tools/mk_title.py   # опционально (нужен Pillow); planes уже в build/title/
 python3 tools/i8080_dead.py --write
 python3 tools/recompile_i8080.py
 python3 tools/build_v06_rom.py  --cpu i8080
