@@ -1,0 +1,25 @@
+NOTICE
+======
+
+Spirits (1987) is a commercial game by Topo Soft, published by Erbe Software.
+All rights in the original game, its audiovisual assets, manuals, and
+packaging remain with the respective copyright holders.
+
+This repository contains:
+
+1. Original work of the port authors — adapter source under `src/v06/`,
+   build/recompilation tools under `tools/`, and documentation under `docs/`
+   and the root README — licensed under the MIT License (see LICENSE).
+
+2. Disassembly, binary payloads, disk/tape images, and related reference
+   material under `disasm/`, `ref/`, and generated game code under
+   `src/i8080/` derived from the original Spirits binaries. These materials
+   are included solely for non-commercial research, preservation, and
+   reproducible verification of the Vector-06C port. They are not licensed
+   under MIT. Redistribute or use them only in ways consistent with
+   applicable copyright law and the rights of the copyright holders.
+
+Cover/cassette scans (TIFF) and large scan archives are intentionally kept
+out of git; see `ref/manual/SOURCE.md` for text sources and links.
+
+This project is not affiliated with Topo Soft or Erbe Software.
