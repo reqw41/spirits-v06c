@@ -321,24 +321,106 @@ def main() -> int:
     cost = {}
 
     # ---------------------------------------------------------- ДЖОЙСТИК
-    print('ДЖОЙСТИК: перестановка порта 0x0E -> RDPSG(14)')
+    # Активный ноль Вектора → активный ноль MSX (как V_JOY_RD после фильтра).
+    def vec_to_msx(v):
+        vec = v ^ 0xFF
+        msx = (((vec >> 2) & 1) | (((vec >> 3) & 1) << 1) |
+               (((vec >> 1) & 1) << 2) | ((vec & 1) << 3) |
+               (((vec >> 6) & 1) << 4) | (((vec >> 7) & 1) << 5))
+        return msx ^ 0xFF
+
+    def is_joy(v):
+        """Раскладка джойстика: b4/b5 = 11 и не оба направления сразу."""
+        return (v & 0x30) == 0x30 and (v & 3) != 0
+
+    def joy_call(cpu, port_e=0xFF, port_6=0xFF):
+        cpu.ports_in[0x0E] = port_e
+        cpu.ports_in[0x06] = port_6
+        return cpu.call(S['V_JOY_RD'])
+
+    print('ДЖОЙСТИК: V_JOY_RAW + перестановка -> RDPSG(14)')
+    # Раньше «все 256» шли сырым портом. Теперь база копится: сперва FF
+    # (биты «бывали единицей»), потом состояние — иначе зажатое с первого
+    # опроса не видно, а мусор без единиц в базе нажатий не даёт.
     c = fresh()
     ok = True
     for v in range(256):
-        c.ports_in[0x0E] = v
-        c.call(S['V_JOY_RD'])
-        vec = v ^ 0xFF                       # 1 = нажато
-        msx = ((vec >> 2) & 1) | (((vec >> 3) & 1) << 1) | (((vec >> 1) & 1) << 2) \
-            | ((vec & 1) << 3) | (((vec >> 6) & 1) << 4) | (((vec >> 7) & 1) << 5)
-        if c.r['a'] != (msx ^ 0xFF):
+        c = fresh()
+        joy_call(c, 0xFF, 0xFF)          # база обоих портов
+        joy_call(c, v, 0xFF)
+        want = vec_to_msx(v) if is_joy(v) else 0xFF
+        if c.r['a'] != want:
             ok = False
             break
-    check('все 256 состояний порта 0x0E', ok, True)
-    c.ports_in[0x0E] = 0xFF
-    cost['V_JOY_RD (один опрос)'] = c.call(S['V_JOY_RD'])
+    check('все 256 состояний порта 0x0E (после базы FF)', ok, True)
+
+    # Постоянный мусор: без «отпускания» база не набирает единицы у нулевых
+    # битов, либо joy_chk сразу даёт FF.
+    ok = True
+    detail = []
+    for garbage in (0x00, 0x0E, 0x36):
+        for port_e, port_6 in ((garbage, 0xFF), (0xFF, garbage),
+                               (garbage, garbage)):
+            c = fresh()
+            for _ in range(3):
+                joy_call(c, port_e, port_6)
+            if c.r['a'] != 0xFF:
+                ok = False
+                detail.append(f'{garbage:02X}@E={port_e:02X}/6={port_6:02X}'
+                              f'->{c.r["a"]:02X}')
+    # любой байт с b4/b5 != 11 — тоже не джойстик
+    for v in range(256):
+        if (v & 0x30) == 0x30:
+            continue
+        c = fresh()
+        joy_call(c, 0xFF, 0xFF)
+        joy_call(c, v, 0xFF)
+        if c.r['a'] != 0xFF:
+            ok = False
+            detail.append(f'b45={v:02X}->{c.r["a"]:02X}')
+            break
+    check('мусор 00/0E/36 и b4/b5!=11 → ничего не нажато', ok, True)
+    if detail:
+        print('      ' + '; '.join(detail[:6]))
+
+    # Настоящий джойстик на каждом порту: FF, затем одно направление/огонь.
+    # Вектор: b0 вправо b1 влево b2 вверх b3 вниз b6 огонь1 b7 огонь2.
+    CASES = [('вправо', 0, 0x08), ('влево', 1, 0x04), ('вверх', 2, 0x01),
+             ('вниз', 3, 0x02), ('огонь1', 6, 0x10), ('огонь2', 7, 0x20)]
+    ok = True
+    for name, bit, msx_press_mask in CASES:
+        pressed = 0xFF & ~(1 << bit)
+        want = 0xFF & ~msx_press_mask
+        for which in ('0E', '06'):
+            c = fresh()
+            joy_call(c, 0xFF, 0xFF)
+            if which == '0E':
+                joy_call(c, pressed, 0xFF)
+            else:
+                joy_call(c, 0xFF, pressed)
+            if c.r['a'] != want:
+                ok = False
+                print(f'      {name} на {which}: {c.r["a"]:02X}, ждали'
+                      f' {want:02X}')
+    check('настоящий джойстик на 0Eh и 06h → биты MSX', ok, True)
+
+    # Огонь, зажатый с первого опроса: не засчитывается, пока не отпустят.
+    c = fresh()
+    fire = 0xFF & ~(1 << 6)              # Вектор b6
+    joy_call(c, fire, 0xFF)
+    first = c.r['a']
+    joy_call(c, 0xFF, 0xFF)              # отпустили — база увидела единицу
+    joy_call(c, fire, 0xFF)
+    again = c.r['a']
+    check('огонь с первого опроса: сначала нет, после отпускания — есть',
+          [first, again], [0xFF, 0xFF & ~0x10])
+
+    c = fresh()
+    joy_call(c, 0xFF, 0xFF)
+    cost['V_JOY_RD (один опрос)'] = joy_call(c, 0xFF, 0xFF)
     # регистры целы?
     c.r.update(b=0x11, c=0x22, d=0x33, e=0x44, h=0x55, l=0x66)
-    c.call(S['V_JOY_RD'])
+    joy_call(c, 0xFF, 0xFF)
     check('bc/de/hl не портятся',
           (c.r['b'], c.r['c'], c.r['d'], c.r['e'], c.r['h'], c.r['l']),
           (0x11, 0x22, 0x33, 0x44, 0x55, 0x66))

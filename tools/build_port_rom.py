@@ -108,10 +108,9 @@ HELP_LIMIT = 0x4620                  # код заставки — первый 
 # (build/v06/v06-low.bin).  Они мертвы, но не случайны, поэтому врезка
 # сверяет их хэш — как и все прочие врезки сверяют ожидаемые байты.
 HELP_DEAD_SHA = None                 # зоны теперь разные, сторож ниже — по нулям
-# СВЯЗКА.  org опущен с 4E00 до 4DD8 (2026-09-23): 40 байт дырки за
-# адаптером ввода (V_END..4DFF) понадобились под перенос головы блока
-# сценариев в V_START.  Потолок — таблица звуковых эффектов 4EAA.
-GLUE_ORG = 0x4DE8
+# СВЯЗКА.  Потолок — таблица звуковых эффектов 4EAA.  После V_JOY_RAW
+# (joy-robust) адаптер кончается на 4DF8, связка 178 б упирается в 4EAA.
+GLUE_ORG = 0x4DF8
 SCR_INIT = 0x5000
 # ЧИТЫ (docs/cheats.md, решение владельца 2026-09-22).  Модуль src/v06/cheat.asm
 # кладётся в ничейную дырку 4F3E..4FFF (194 б, docs/v06-memory.md): в адаптер
@@ -316,7 +315,7 @@ def add_title(mem, out, L, inp, patch, done) -> int:
     # --- сборка title.asm: адреса адаптера и данных мелодии идут через equ
     help_equ = add_help(mem, out, done)
     need = ["V_PSG_WR", "V_KBD_POLL", "V_KBD_INIT", "V_SND_INIT",
-            "v_msxrow", "v_scroll"]
+            "V_JOY_RAW", "v_msxrow", "v_scroll"]
     miss = [n for n in need if n not in L]
     if miss:
         sys.exit(f"в листинге адаптера нет меток: {miss}")
