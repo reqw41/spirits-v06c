@@ -12,14 +12,34 @@ i8080). Без Z80-переходника.
 |---|---|---|
 | ![](docs/screenshots/room-start.png) | ![](docs/screenshots/room-09.png) | ![](docs/screenshots/room-05.png) |
 
+| Испанская версия: справка | Испанская версия: начало игры |
+|---|---|
+| ![](docs/screenshots/help-es.png) | ![](docs/screenshots/room-start-es.png) |
+
+## Язык
+
+Порт переведён на русский: надписи на панели (жизни, энергия, предметы), титры,
+сообщения конца игры и страница справки после заставки. Для кириллицы в шрифт игры
+дорисованы недостающие буквы, а в титрах вместо строки об авторе конверсии для MSX
+стоит «ВЕРСИЯ ВЕКТОР 06Ц». Перевод — шаг сборки (`tools/i18n_ru.py`): он проверяет испанские байты по каждому адресу и
+кладёт вместо них русские, код игры не меняется.
+
+Язык оригинала MSX — испанский. Испанская сборка (`--lang es`) — это оригинальные
+строки и титры без изменений плюс страница справки по-испански из
+[docs/help-page-es.md](docs/help-page-es.md). В шрифте игры нет ударений, «Ñ», «¡» и «¿»,
+поэтому справка написана без них.
+
 ## Готовые образы
 
 | Файл | Что это |
 |---|---|
 | [`rom/spirits.rom`](rom/spirits.rom) | полный порт для i8080: заставка, справка, читы; 65280 байт (вторая половина файла — картинка заставки прямо в видеопамять). Для MiSTer (ядро Vector-06C) и эмуляторов Вектора |
 | [`rom/spirits-notitle.rom`](rom/spirits-notitle.rom) | то же без заставки и страницы справки, 40690 байт: сразу титры и игра. Для загрузчиков, которым 64 КБ не по силам (например, Вектор Турбо+ из CP/M) |
+| [`rom/spirits-es.rom`](rom/spirits-es.rom) | испанская версия (язык оригинала) с заставкой и справкой, 65280 байт |
+| [`rom/spirits-es-notitle.rom`](rom/spirits-es-notitle.rom) | испанская версия без заставки и справки, 40585 байт |
 
-Оба собирает `sh tools/build_all.sh`; читы есть в обоих (стенд — 35 из 35 на каждом).
+Первые два образа русские. Все четыре собирает `sh tools/build_all.sh`; читы есть во
+всех (стенд — 35 из 35 на каждом).
 
 ## Управление
 
@@ -86,6 +106,9 @@ python3 tools/build_v06_rom.py              # эталон Z80 (нужен ре�
 python3 tools/recompile_i8080.py            # → src/i8080/game.asm
 python3 tools/build_v06_rom.py  --cpu i8080
 python3 tools/build_port_rom.py --cpu i8080 # → build/port/spirits-port-i8080.rom
+# испанская версия: тот же код, другие строки и справка
+python3 tools/build_v06_rom.py  --cpu i8080 --lang es
+python3 tools/build_port_rom.py build/port-es --cpu i8080 --lang es
 ```
 
 Плоскости заставки уже в `build/title/`. Пересобрать картинку
@@ -101,6 +124,8 @@ python3 tools/build_port_rom.py --cpu i8080 # → build/port/spirits-port-i8080.
 node tools/cheat_probe_v06js.js                       # читы: 35 проверок + кадры
 python3 tools/adapter_probe.py build/v06/adapter.bin build/v06/adapter.lst   # адаптер ввода/звука, модель 8080
 node tools/trap_stale_v06js.js build/port/spirits-port-i8080.rom 3000          # 3000 кадров без срыва
+node tools/cheat_probe_v06js.js build/port-es/spirits-port-i8080.rom build/port-es/shots   # то же для испанской
+SHOTS="100:fire 200=help.png" node tools/shots_v06js.js rom/spirits-es.rom /tmp/shots  # снимки экрана по кадрам
 ```
 
 ## Документация

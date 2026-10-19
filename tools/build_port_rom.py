@@ -12,6 +12,10 @@
                                          → без заставки (образ 40585 б, как до
                                            2026-09-22: для замеров, которым
                                            заставка только мешает)
+  python3 tools/build_port_rom.py --lang es
+                                         → испанский (язык оригинала MSX): игра из
+                                           build/adapter/spirits*-es.rom, справка
+                                           из docs/help-page-es.md
 
 Без ключа берётся ОСНОВНАЯ схема «2 + 1» (docs/adapter-requirements.md,
 § 0c): build/adapter/spirits.rom → build/port/spirits-port.rom.
@@ -152,6 +156,12 @@ T_SCORE_A = 0x2651           # голос A трека 1, 225 б (канон DD5
 T_SCORE_B = 0x2732           # голос B трека 1, 225 б (канон DE32)
 
 
+# ЯЗЫК (--lang ru|es): какой образ игры брать (build/adapter/spirits*-es.rom
+# собирает tools/build_v06_rom.py --lang es) и какой текст справки
+# (docs/help-page-<язык>.md).  Испанский — язык оригинала MSX.
+LANG = "ru"
+
+
 def add_help(mem, out, done) -> dict:
     """Страница справки: знаки препинания и поток текста.
 
@@ -163,6 +173,7 @@ def add_help(mem, out, done) -> dict:
     """
     sys.path.insert(0, str(ROOT / "tools"))
     import mk_help                                   # noqa: E402
+    mk_help.SRC = ROOT / "docs" / f"help-page-{LANG}.md"
     blob, expect, rep = mk_help.build()
     npunct = expect["stream_offset"]
     punct, stream = blob[:npunct], blob[npunct:]
@@ -383,6 +394,12 @@ def main() -> int:
     if cpu == "i8080" and scheme != "cpc21":
         sys.exit("--cpu i8080 собран только для схемы «2 + 1» (cpc21)")
     load_map(cpu)
+    global LANG
+    if "--lang" in args:
+        i = args.index("--lang")
+        LANG = args[i + 1]
+        del args[i:i + 2]
+        assert LANG in ("ru", "es"), LANG
     title = True
     if "--no-title" in args:
         title = False
@@ -402,7 +419,7 @@ def main() -> int:
     # snd.asm, и сторож звука покраснел тремя строками, хотя исходник был
     # правильный (2026-09-23). Сверяем время: любой исходник новее образа —
     # падаем и говорим, чем пересобрать.
-    adapter_rom = ROOT / f"build/adapter/spirits{tag}.rom"
+    adapter_rom = ROOT / f"build/adapter/spirits{tag}{'' if LANG == 'ru' else '-' + LANG}.rom"
     if not adapter_rom.is_file():
         sys.exit(f"нет {adapter_rom.relative_to(ROOT)} — сперва"
                  f" sh tools/build_adapter.sh")

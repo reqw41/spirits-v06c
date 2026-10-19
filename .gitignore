@@ -1,6 +1,8 @@
 build/adapter/
 build/port/
 build/port-notitle/
+build/port-es/
+build/port-es-notitle/
 build/i8080/
 build/i18n/
 build/help/
