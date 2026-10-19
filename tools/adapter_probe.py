@@ -346,13 +346,25 @@ def main() -> int:
     ok = True
     for v in range(256):
         c = fresh()
-        joy_call(c, 0xFF, 0xFF)          # база обоих портов
-        joy_call(c, v, 0xFF)
+        joy_call(c, 0xFF, 0xFF)          # база порта «П»
+        joy_call(c, 0xFF, v)
         want = vec_to_msx(v) if is_joy(v) else 0xFF
         if c.r['a'] != want:
             ok = False
             break
-    check('все 256 состояний порта 0x0E (после базы FF)', ok, True)
+    check('все 256 состояний порта 06h «П» (после базы FF)', ok, True)
+
+    # Только «П» (решение владельца 2026-10-19): порт 0x0E не читается вовсе —
+    # любое его значение, в том числе «настоящее нажатие», ничего не даёт.
+    ok = True
+    for v in range(256):
+        c = fresh()
+        joy_call(c, 0xFF, 0xFF)
+        joy_call(c, v, 0xFF)
+        if c.r['a'] != 0xFF:
+            ok = False
+            break
+    check('порт 0x0E не читается: все 256 значений -> ничего не нажато', ok, True)
 
     # Постоянный мусор: без «отпускания» база не набирает единицы у нулевых
     # битов, либо joy_chk сразу даёт FF.
@@ -374,7 +386,7 @@ def main() -> int:
             continue
         c = fresh()
         joy_call(c, 0xFF, 0xFF)
-        joy_call(c, v, 0xFF)
+        joy_call(c, 0xFF, v)
         if c.r['a'] != 0xFF:
             ok = False
             detail.append(f'b45={v:02X}->{c.r["a"]:02X}')
@@ -391,26 +403,21 @@ def main() -> int:
     for name, bit, msx_press_mask in CASES:
         pressed = 0xFF & ~(1 << bit)
         want = 0xFF & ~msx_press_mask
-        for which in ('0E', '06'):
-            c = fresh()
-            joy_call(c, 0xFF, 0xFF)
-            if which == '0E':
-                joy_call(c, pressed, 0xFF)
-            else:
-                joy_call(c, 0xFF, pressed)
-            if c.r['a'] != want:
-                ok = False
-                print(f'      {name} на {which}: {c.r["a"]:02X}, ждали'
-                      f' {want:02X}')
-    check('настоящий джойстик на 0Eh и 06h → биты MSX', ok, True)
+        c = fresh()
+        joy_call(c, 0xFF, 0xFF)
+        joy_call(c, 0xFF, pressed)
+        if c.r['a'] != want:
+            ok = False
+            print(f'      {name} на 06: {c.r["a"]:02X}, ждали {want:02X}')
+    check('настоящий джойстик «П» на 06h → биты MSX', ok, True)
 
     # Огонь, зажатый с первого опроса: не засчитывается, пока не отпустят.
     c = fresh()
     fire = 0xFF & ~(1 << 6)              # Вектор b6
-    joy_call(c, fire, 0xFF)
+    joy_call(c, 0xFF, fire)
     first = c.r['a']
     joy_call(c, 0xFF, 0xFF)              # отпустили — база увидела единицу
-    joy_call(c, fire, 0xFF)
+    joy_call(c, 0xFF, fire)
     again = c.r['a']
     check('огонь с первого опроса: сначала нет, после отпускания — есть',
           [first, again], [0xFF, 0xFF & ~0x10])
