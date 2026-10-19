@@ -5,7 +5,17 @@
 адаптера ввода, ни связки, ни модуля читов, и сверки `cmp_hero_msx` /
 `cmp_color_msx` их не видят.
 
-Стенд: `node tools/cheat_probe_v06js.js [rom] [outdir] [базовый-rom]`.
+Стенд: `node tools/cheat_probe_v06js.js [rom] [outdir] [базовый-rom]` (по умолчанию —
+i8080-образ `build/port/spirits-port-i8080.rom`; эмулятор — клон vector06js в
+`~/projects/vector06js` или путь в `V06`).
+
+> **Имя образа.** Здесь и в других документах `build/port/spirits-port.rom` — имя
+> из ветки разработки; в этом репозитории полный порт собирается как
+> `build/port/spirits-port-i8080.rom` (и копия `rom/spirits.rom`).
+>
+> Проверено 19.10.2026 на этом образе: `cheat_probe_v06js.js` — 35 из 35,
+> `adapter_probe.py` — 41 из 41 (из них 11 по читам), `trap_stale_v06js.js` за
+> 3000 кадров — срыва нет.
 
 ---
 
@@ -201,6 +211,6 @@ V_CHEAT_MOVE (врезка в 0B45, вместо call C32C)
 | чистота i8080 | `tools/check_i8080.py` на `adapter.bin`, `glue.bin`, `cheat.bin` (последние два зовёт сама `build_port_rom.py`) |
 | скан, фронты, окно включения | `tools/adapter_probe.py` — 11 проверок читов на модели 8080 (в том числе: 600 кадров титров окно не закрывают; на 150-м кадре игры F1+F3 ещё включают, после 150 — уже нет) |
 | раскладка зон памяти | `tools/verify_v06.py` — зона «модуль читов» `4F3E..4FFF` |
-| порт не сорвался | `tools/trap_stale_v06js.js build/port/spirits-port.rom 3000` |
+| порт не сорвался | `tools/trap_stale_v06js.js build/port/spirits-port-i8080.rom 3000` |
 | сами читы | `tools/cheat_probe_v06js.js` — 35 проверок + кадры; отдельный прогон «F1+F3 зажаты ТОЛЬКО в момент нажатия старта на титрах и первые 20 кадров игры» (на сборке до правки он красный: `v_cheat = 0`, нажатий забрано 0) |
 | поведение без читов | тот же стенд с базовым образом третьим аргументом |

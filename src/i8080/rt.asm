@@ -14,7 +14,6 @@
 ;   il_ix_* / il_iy_*      формы: ld/or/cp/inc/dec/(hl) для холодных сайтов
 ;   il_rnd / il_ldir / il_lddr / il_exaf
 ;
-; --- прологи: разобрать стек вызова и достать inline-смещение ---
 il_pro1:
                 ld      (il_tmp2),hl
                 push    af
@@ -98,7 +97,6 @@ il_epi_a:                               ; флаги и HL вызывателя,
                 pop     af
                 ld      a,(il_a)
                 jp      il_ret_hl
-; --- формы IX (холодные сайты: call + байт смещения) ---
 il_ix_lda:
                 call    il_pro_ix
                 ld a,(hl)
@@ -139,7 +137,6 @@ il_ix_stn:
                 ld a,(il_d)
                 ld (hl),a
                 jp il_epi
-; --- формы IY ---
 il_iy_cp:
                 call    il_pro_iy
                 ld a,(il_f+1)
@@ -223,7 +220,6 @@ il_iy_stn:
                 ld a,(il_d)
                 ld (hl),a
                 jp il_epi
-; --- прочие замены команд Z80 ---
 il_rnd:                                 ; ЗАМЕНА `ld a,r` (docs/determinism.md)
                 ld      a,(z80_r)       ; у i8080 регистра R нет; ряд ведёт
                 add     a,0x9D          ; эта ячейка: +0x9D на чтение,

@@ -2,6 +2,7 @@ build/adapter/
 build/port/
 build/i8080/
 build/i18n/
+build/help/
 build/orig/
 build/*.bin
 build/v06/*

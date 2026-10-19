@@ -1111,6 +1111,14 @@ def layout_and_emit(items, units, fixed, lab, equs, audit, args):
         "; ЭТОТ ФАЙЛ НЕ СОБИРАЕТСЯ отдельно: те же процедуры лежат внутри\n"
         "; src/i8080/game.asm, разложенные по свободным кускам образа\n"
         "; (docs/recompilation.md, §5).  Здесь — чтобы их можно было читать.\n"
+        ";\n"
+        "; Карта:\n"
+        ";   il_pro1 / il_pro2     пролог: спасти AF/HL, взять 1 или 2 inline-байта\n"
+        ";   il_pro_ix / il_pro_iy  то же + база IX или IY\n"
+        ";   il_adr                 прибавить смещение СО ЗНАКОМ к HL\n"
+        ";   il_epi / il_epi_a      эпилог: вернуть AF (+ A из il_a) и HL\n"
+        ";   il_ix_* / il_iy_*      формы: ld/or/cp/inc/dec/(hl) для холодных сайтов\n"
+        ";   il_rnd / il_ldir / il_lddr / il_exaf\n"
         ";\n" + rtx)
     rt_units, cur = [], None
     for ln in rtx.split("\n"):
